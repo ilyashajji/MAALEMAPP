@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passer une Réservation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7fc;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .form-section, .table-section {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-back {
+            text-decoration: none; /* Remove underline */
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5">Gestion des Réservations</h1>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <h4 class="mb-4">Passer une Réservation</h4>
+            <form id="reservationForm">
+                <input type="hidden" id="reservationId">
+                <div class="mb-3">
+                    <label for="customerName" class="form-label">Nom du Client</label>
+                    <input type="text" class="form-control" id="customerName" placeholder="Entrez le nom du client" required>
+                </div>
+                <div class="mb-3">
+                    <label for="serviceType" class="form-label">Type de Service</label>
+                    <select class="form-select" id="serviceType" required>
+                        <option value="">Sélectionnez un service</option>
+                        <option value="Restaurant">Restaurant</option>
+                        <option value="Salle de Conférence">Salle de Conférence</option>
+                        <option value="Catering">Catering</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="date" class="form-label">Date de Réservation</label>
+                    <input type="date" class="form-control" id="date" required>
+                </div>
+                <div class="mb-3">
+                    <label for="time" class="form-label">Heure</label>
+                    <input type="time" class="form-control" id="time" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guests" class="form-label">Nombre de Personnes</label>
+                    <input type="number" class="form-control" id="guests" placeholder="Entrez le nombre de personnes" required>
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="button" id="addReservationBtn" class="btn btn-primary w-100">Ajouter</button>
+                    <button type="button" id="updateReservationBtn" class="btn btn-warning w-100" disabled>Modifier</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <h4 class="mb-4">Liste des Réservations</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Nom</th>
+                            <th scope="col">Type de Service</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Heure</th>
+                            <th scope="col">Nombre de Personnes</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservationTable">
+                        <!-- Les réservations seront ajoutées dynamiquement ici -->
+                    </tbody>
+                </table>
+                <!-- Bouton de redirection stylisé -->
+                <a href="dashboard.html" class="btn-back">Retour au Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Charger les réservations depuis le localStorage
+            let reservations = JSON.parse(localStorage.getItem('reservations')) || [];
+
+            function displayReservations() {
+                const reservationTable = document.getElementById("reservationTable");
+                reservationTable.innerHTML = ""; // Clear the table
+
+                reservations.forEach((reservation) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${reservation.id}</td>
+                        <td>${reservation.name}</td>
+                        <td>${reservation.service}</td>
+                        <td>${reservation.date}</td>
+                        <td>${reservation.time}</td>
+                        <td>${reservation.guests}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editReservation(${reservation.id})">Modifier</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteReservation(${reservation.id})">Supprimer</button>
+                        </td>
+                    `;
+                    reservationTable.appendChild(row);
+                });
+            }
+
+            function saveToLocalStorage() {
+                localStorage.setItem('reservations', JSON.stringify(reservations));
+            }
+
+            function addReservation(reservationData) {
+                const newReservation = {
+                    id: reservations.length > 0 ? reservations[reservations.length - 1].id + 1 : 1,
+                    ...reservationData
+                };
+                reservations.push(newReservation);
+                saveToLocalStorage();
+                displayReservations();
+            }
+
+            function updateReservation(reservationData) {
+                const index = reservations.findIndex((r) => r.id === reservationData.id);
+                if (index !== -1) {
+                    reservations[index] = reservationData;
+                    saveToLocalStorage();
+                    displayReservations();
+                }
+            }
+
+            window.editReservation = (id) => {
+                const reservation = reservations.find((r) => r.id === id);
+                if (reservation) {
+                    document.getElementById("reservationId").value = reservation.id;
+                    document.getElementById("customerName").value = reservation.name;
+                    document.getElementById("serviceType").value = reservation.service;
+                    document.getElementById("date").value = reservation.date;
+                    document.getElementById("time").value = reservation.time;
+                    document.getElementById("guests").value = reservation.guests;
+
+                    document.getElementById("addReservationBtn").disabled = true;
+                    document.getElementById("updateReservationBtn").disabled = false;
+                }
+            };
+
+            window.deleteReservation = (id) => {
+                reservations = reservations.filter((r) => r.id !== id);
+                saveToLocalStorage();
+                displayReservations();
+            };
+
+            document.getElementById("addReservationBtn").onclick = () => {
+                const reservationData = {
+                    name: document.getElementById("customerName").value,
+                    service: document.getElementById("serviceType").value,
+                    date: document.getElementById("date").value,
+                    time: document.getElementById("time").value,
+                    guests: parseInt(document.getElementById("guests").value)
+                };
+                addReservation(reservationData);
+                document.getElementById("reservationForm").reset();
+            };
+
+            document.getElementById("updateReservationBtn").onclick = () => {
+                const reservationData = {
+                    id: parseInt(document.getElementById("reservationId").value),
+                    name: document.getElementById("customerName").value,
+                    service: document.getElementById("serviceType").value,
+                    date: document.getElementById("date").value,
+                    time: document.getElementById("time").value,
+                    guests: parseInt(document.getElementById("guests").value)
+                };
+                updateReservation(reservationData);
+                document.getElementById("reservationForm").reset();
+                document.getElementById("addReservationBtn").disabled = false;
+                document.getElementById("updateReservationBtn").disabled = true;
+            };
+
+            displayReservations();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Factures</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7fc;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .form-section, .table-section {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .cards-section {
+            margin-bottom: 30px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-back {
+            text-decoration: none;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5">Gestion des Factures</h1>
+
+        <!-- Section des cartes -->
+        <div class="row cards-section">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total des Factures</h5>
+                        <p id="totalInvoices" class="card-text fs-4 fw-bold">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Montant Total</h5>
+                        <p id="totalAmount" class="card-text fs-4 fw-bold">0 MAD</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Factures Payées</h5>
+                        <p id="paidInvoices" class="card-text fs-4 fw-bold">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section formulaire -->
+        <div class="form-section">
+            <h4 class="mb-4">Ajouter ou Modifier une Facture</h4>
+            <form id="invoiceForm">
+                <input type="hidden" id="invoiceId">
+                <div class="mb-3">
+                    <label for="invoiceNumber" class="form-label">Numéro de Facture</label>
+                    <input type="text" class="form-control" id="invoiceNumber" placeholder="Entrez le numéro de la facture" required>
+                </div>
+                <div class="mb-3">
+                    <label for="clientName" class="form-label">Nom du Client</label>
+                    <input type="text" class="form-control" id="clientName" placeholder="Entrez le nom du client" required>
+                </div>
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Montant</label>
+                    <input type="number" class="form-control" id="amount" placeholder="Entrez le montant" required>
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">Statut</label>
+                    <select class="form-select" id="status" required>
+                        <option value="">Sélectionnez...</option>
+                        <option value="Payée">Payée</option>
+                        <option value="Non Payée">Non Payée</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="button" id="addInvoiceBtn" class="btn btn-primary w-100">Ajouter</button>
+                    <button type="button" id="updateInvoiceBtn" class="btn btn-warning w-100" disabled>Modifier</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Section tableau -->
+        <div class="table-section">
+            <h4 class="mb-4">Liste des Factures</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Numéro</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Montant</th>
+                            <th scope="col">Statut</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTable">
+                        <!-- Les factures seront ajoutées dynamiquement ici -->
+                    </tbody>
+                </table>
+                <a href="dashboard.html" class="btn-back">Retour au Dashboard</a>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let invoices = JSON.parse(localStorage.getItem("invoices")) || [];
+
+            function saveToLocalStorage() {
+                localStorage.setItem("invoices", JSON.stringify(invoices));
+            }
+
+            function updateCards() {
+                const totalInvoices = invoices.length;
+                const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+                const paidInvoices = invoices.filter((invoice) => invoice.status === "Payée").length;
+
+                document.getElementById("totalInvoices").textContent = totalInvoices;
+                document.getElementById("totalAmount").textContent = `${totalAmount} MAD`;
+                document.getElementById("paidInvoices").textContent = paidInvoices;
+            }
+
+            function displayInvoices() {
+                const invoiceTable = document.getElementById("invoiceTable");
+                invoiceTable.innerHTML = "";
+
+                invoices.forEach((invoice) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${invoice.id}</td>
+                        <td>${invoice.number}</td>
+                        <td>${invoice.client}</td>
+                        <td>${invoice.amount} MAD</td>
+                        <td>${invoice.status}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editInvoice(${invoice.id})">Modifier</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${invoice.id})">Supprimer</button>
+                        </td>
+                    `;
+                    invoiceTable.appendChild(row);
+                });
+
+                updateCards();
+            }
+
+            function addInvoice(invoiceData) {
+                const newInvoice = {
+                    id: invoices.length > 0 ? invoices[invoices.length - 1].id + 1 : 1,
+                    ...invoiceData
+                };
+                invoices.push(newInvoice);
+                saveToLocalStorage();
+                displayInvoices();
+            }
+
+            function updateInvoice(invoiceData) {
+                const index = invoices.findIndex((i) => i.id === invoiceData.id);
+                if (index !== -1) {
+                    invoices[index] = invoiceData;
+                    saveToLocalStorage();
+                    displayInvoices();
+                }
+            }
+
+            window.editInvoice = (id) => {
+                const invoice = invoices.find((i) => i.id === id);
+                if (invoice) {
+                    document.getElementById("invoiceId").value = invoice.id;
+                    document.getElementById("invoiceNumber").value = invoice.number;
+                    document.getElementById("clientName").value = invoice.client;
+                    document.getElementById("amount").value = invoice.amount;
+                    document.getElementById("status").value = invoice.status;
+
+                    document.getElementById("addInvoiceBtn").disabled = true;
+                    document.getElementById("updateInvoiceBtn").disabled = false;
+                }
+            };
+
+            window.deleteInvoice = (id) => {
+                invoices = invoices.filter((i) => i.id !== id);
+                saveToLocalStorage();
+                displayInvoices();
+            };
+
+            document.getElementById("addInvoiceBtn").onclick = () => {
+                const invoiceData = {
+                    number: document.getElementById("invoiceNumber").value,
+                    client: document.getElementById("clientName").value,
+                    amount: parseFloat(document.getElementById("amount").value),
+                    status: document.getElementById("status").value
+                };
+                addInvoice(invoiceData);
+                document.getElementById("invoiceForm").reset();
+            };
+
+            document.getElementById("updateInvoiceBtn").onclick = () => {
+                const invoiceData = {
+                    id: parseInt(document.getElementById("invoiceId").value),
+                    number: document.getElementById("invoiceNumber").value,
+                    client: document.getElementById("clientName").value,
+                    amount: parseFloat(document.getElementById("amount").value),
+                    status: document.getElementById("status").value
+                };
+                updateInvoice(invoiceData);
+
+                document.getElementById("invoiceForm").reset();
+                document.getElementById("addInvoiceBtn").disabled = false;
+                document.getElementById("updateInvoiceBtn").disabled = true;
+            };
+
+            // Initialisation lors du chargement
+            displayInvoices();
+        });
+    </script>
+</body>
+</html>

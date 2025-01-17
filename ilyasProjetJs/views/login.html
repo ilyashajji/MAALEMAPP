@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .login-container h2 {
+            color: #2d3748;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .login-container h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .login-container input,
+        .login-container select {
+            width: 100%;
+            padding: 15px;
+            padding-left: 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #fff;
+            color: #2d3748;
+        }
+
+        .login-container input::placeholder {
+            color: #a0aec0;
+        }
+
+        .login-container input:focus,
+        .login-container select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-container select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg fill='%23a0aec0' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .login-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-container button:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Welcome Back</h2>
+        <div class="input-group">
+            <span class="input-icon">📧</span>
+            <input type="email" id="email" placeholder="Enter your email" required>
+        </div>
+        <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" placeholder="Enter your password" required>
+        </div>
+        <div class="input-group">
+            <span class="input-icon">👤</span>
+            <select id="role" required>
+                <option value="" disabled selected>Select your role</option>
+                <option value="admin">Admin</option>
+                <option value="constructeur">Constructeur</option>
+                <option value="utilisateur">Utilisateur</option>
+            </select>
+        </div>
+        <button onclick="login()">Sign In</button>
+    </div>
+
+    <script>
+        // Simulated user database
+        const users = [
+            { email: "admin@example.com", password: "admin123", role: "admin" },
+            { email: "constructeur@example.com", password: "construct123", role: "constructeur" },
+            { email: "user@example.com", password: "user123", role: "utilisateur" }
+        ];
+
+        // Login function
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const role = document.getElementById("role").value;
+
+            // Find user in the "database"
+            const user = users.find(u => u.email === email && u.password === password && u.role === role);
+
+            if (user) {
+                // Redirect based on user's role
+                switch (user.role) {
+                    case "admin":
+                        alert("Welcome, Admin!");
+                        window.location.href = "admin/dashboard.html";
+                        break;
+                    case "constructeur":
+                        alert("Welcome, Constructeur!");
+                        window.location.href = "constructeur/dashboard.html";
+                        break;
+                    case "utilisateur":
+                        alert("Welcome, Utilisateur!");
+                        window.location.href = "client/dashboard.html";
+                        break;
+                    default:
+                        alert("Unknown role!");
+                }
+            } else {
+                alert("Invalid email, password, or role!");
+            }
+        }
+    </script>
+</body>
+</html>

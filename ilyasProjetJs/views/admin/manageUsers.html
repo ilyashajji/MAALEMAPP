@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Utilisateurs</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    .btn-back {
+        text-decoration: none;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-top: 20px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-back:hover {
+        background-color: #0056b3;
+    }
+</style>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Gestion des Utilisateurs</h2>
+
+    <!-- Formulaire pour Ajouter/Modifier un Utilisateur -->
+    <div class="shadow p-4 rounded bg-light mb-4">
+        <h4 class="mb-3">Ajouter ou Modifier un Utilisateur</h4>
+        <form id="createUserForm">
+            <input type="hidden" id="userId">
+            <div class="mb-3">
+                <label for="userName" class="form-label">Nom</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="userName" 
+                    placeholder="Entrez le nom" 
+                    required
+                >
+            </div>
+            <div class="mb-3">
+                <label for="userEmail" class="form-label">Email</label>
+                <input 
+                    type="email" 
+                    class="form-control" 
+                    id="userEmail" 
+                    placeholder="Entrez l'email" 
+                    required
+                >
+            </div>
+            <div class="mb-3">
+                <label for="userRole" class="form-label">Rôle</label>
+                <select class="form-select" id="userRole" required>
+                    <option value="Client">Client</option>
+                    <option value="Constructeur">Constructeur</option>
+                </select>
+            </div>
+            <div class="d-flex gap-3">
+                <button type="button" id="addButton" class="btn btn-primary w-100">Ajouter</button>
+                <button type="button" id="updateButton" class="btn btn-warning w-100" disabled>Modifier</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table des Utilisateurs -->
+    <div class="shadow p-4 rounded bg-white">
+        <h4 class="mb-3">Liste des Utilisateurs</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="userTable">
+                    <!-- Utilisateurs affichés ici dynamiquement -->
+                </tbody>
+            </table>
+            <a href="dashboard.html" class="btn-back">Retour au Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Charger les utilisateurs depuis le local storage ou initialiser avec des valeurs par défaut
+        let users = JSON.parse(localStorage.getItem('users')) || [
+            { id: 1, name: "John Doe", email: "john@example.com", role: "Client" },
+            { id: 2, name: "Jane Smith", email: "jane@example.com", role: "Constructeur" },
+        ];
+
+        // Sauvegarder les utilisateurs dans le local storage
+        function saveToLocalStorage() {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Afficher les utilisateurs dans le tableau
+        function displayUsers() {
+            const userTable = document.getElementById("userTable");
+            userTable.innerHTML = ''; // Clear existing rows
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editUser(${user.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Supprimer</button>
+                    </td>
+                `;
+                userTable.appendChild(row);
+            });
+        }
+
+        // Ajouter un utilisateur
+        function addUser(userData) {
+            const newUser = {
+                id: users.length > 0 ? users[users.length - 1].id + 1 : 1,
+                name: userData.name,
+                email: userData.email,
+                role: userData.role
+            };
+            users.push(newUser);
+            saveToLocalStorage(); // Sauvegarde dans le local storage
+            displayUsers();
+        }
+
+        // Mettre à jour un utilisateur
+        function updateUser(userData) {
+            const index = users.findIndex(u => u.id === userData.id);
+            if (index !== -1) {
+                users[index] = userData;
+                saveToLocalStorage(); // Sauvegarde dans le local storage
+                displayUsers();
+            }
+        }
+
+        // Supprimer un utilisateur
+        window.deleteUser = (id) => {
+            users = users.filter(user => user.id !== id);
+            saveToLocalStorage(); // Sauvegarde dans le local storage
+            displayUsers();
+        };
+
+        // Charger les données d'un utilisateur dans le formulaire pour modification
+        window.editUser = (id) => {
+            const user = users.find(u => u.id === id);
+            if (user) {
+                document.getElementById("userName").value = user.name;
+                document.getElementById("userEmail").value = user.email;
+                document.getElementById("userRole").value = user.role;
+                document.getElementById("userId").value = user.id;
+                document.getElementById("addButton").disabled = true;
+                document.getElementById("updateButton").disabled = false;
+            }
+        };
+
+        // Gestion des boutons Ajouter et Modifier
+        document.getElementById("addButton").onclick = () => {
+            const userData = {
+                name: document.getElementById("userName").value,
+                email: document.getElementById("userEmail").value,
+                role: document.getElementById("userRole").value
+            };
+            addUser(userData);
+            document.getElementById("createUserForm").reset();
+        };
+
+        document.getElementById("updateButton").onclick = () => {
+            const userData = {
+                id: parseInt(document.getElementById("userId").value),
+                name: document.getElementById("userName").value,
+                email: document.getElementById("userEmail").value,
+                role: document.getElementById("userRole").value
+            };
+            updateUser(userData);
+            document.getElementById("createUserForm").reset();
+            document.getElementById("addButton").disabled = false;
+            document.getElementById("updateButton").disabled = true;
+        };
+
+        // Afficher les utilisateurs au chargement
+        displayUsers();
+    });
+</script>
+</body>
+</html>

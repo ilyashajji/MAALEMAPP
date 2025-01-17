@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Services</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    .btn-back {
+        text-decoration: none;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-top: 20px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-back:hover {
+        background-color: #0056b3;
+    }
+</style>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Gestion des Services</h2>
+
+    <!-- Formulaire pour Ajouter/Modifier un Service -->
+    <div class="shadow p-4 rounded bg-light mb-4">
+        <h4 class="mb-3">Ajouter ou Modifier un Service</h4>
+        <form id="createServiceForm">
+            <input type="hidden" id="serviceId">
+            <div class="mb-3">
+                <label for="serviceName" class="form-label">Nom du Service</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="serviceName" 
+                    placeholder="Entrez le nom du service" 
+                    required
+                >
+            </div>
+            <div class="mb-3">
+                <label for="serviceDescription" class="form-label">Description</label>
+                <textarea 
+                    class="form-control" 
+                    id="serviceDescription" 
+                    rows="3" 
+                    placeholder="Entrez une description" 
+                    required
+                ></textarea>
+            </div>
+            <div class="d-flex gap-3">
+                <button type="button" id="addButton" class="btn btn-primary w-100">Ajouter</button>
+                <button type="button" id="updateButton" class="btn btn-warning w-100" disabled>Modifier</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table des Services -->
+    <div class="shadow p-4 rounded bg-white">
+        <h4 class="mb-3">Liste des Services</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="serviceTable">
+                    <!-- Les services seront ajoutés ici dynamiquement -->
+                </tbody>
+            </table>
+            <a href="dashboard.html" class="btn-back">Retour au Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Charger les données du local storage ou initialiser avec des données par défaut
+        let services = JSON.parse(localStorage.getItem('services')) || [
+            { id: 1, name: "Plomberie", description: "Services de plomberie." },
+            { id: 2, name: "Jardinage", description: "Entretien et création de jardins." }
+        ];
+
+        // Sauvegarder dans le local storage
+        function saveToLocalStorage() {
+            localStorage.setItem('services', JSON.stringify(services));
+        }
+
+        // Afficher les services dans la table
+        function displayServices() {
+            const serviceTable = document.getElementById("serviceTable");
+            serviceTable.innerHTML = ''; // Clear existing table rows
+
+            services.forEach(service => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${service.id}</td>
+                    <td>${service.name}</td>
+                    <td>${service.description}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editService(${service.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id})">Supprimer</button>
+                    </td>
+                `;
+                serviceTable.appendChild(row);
+            });
+        }
+
+        // Ajouter un service
+        function addService(serviceData) {
+            const newService = { 
+                id: services.length > 0 ? services[services.length - 1].id + 1 : 1, 
+                name: serviceData.name, 
+                description: serviceData.description 
+            };
+            services.push(newService);
+            saveToLocalStorage(); // Sauvegarde dans le local storage
+            displayServices();
+        }
+
+        // Mettre à jour un service
+        function updateService(serviceData) {
+            const index = services.findIndex(s => s.id === serviceData.id);
+            if (index !== -1) {
+                services[index] = serviceData;
+                saveToLocalStorage(); // Sauvegarde dans le local storage
+                displayServices();
+            }
+        }
+
+        // Supprimer un service
+        window.deleteService = (id) => {
+            services = services.filter(service => service.id !== id);
+            saveToLocalStorage(); // Sauvegarde dans le local storage
+            displayServices();
+        };
+
+        // Charger un service pour modification
+        window.editService = (id) => {
+            const service = services.find(s => s.id === id);
+            if (service) {
+                document.getElementById("serviceName").value = service.name;
+                document.getElementById("serviceDescription").value = service.description;
+                document.getElementById("serviceId").value = service.id;
+                document.getElementById("addButton").disabled = true;
+                document.getElementById("updateButton").disabled = false;
+            }
+        };
+
+        // Gestion des boutons Ajouter et Modifier
+        document.getElementById("addButton").onclick = () => {
+            const serviceData = {
+                name: document.getElementById("serviceName").value,
+                description: document.getElementById("serviceDescription").value
+            };
+            addService(serviceData);
+            document.getElementById("createServiceForm").reset();
+        };
+
+        document.getElementById("updateButton").onclick = () => {
+            const serviceData = {
+                id: parseInt(document.getElementById("serviceId").value),
+                name: document.getElementById("serviceName").value,
+                description: document.getElementById("serviceDescription").value
+            };
+            updateService(serviceData);
+            document.getElementById("createServiceForm").reset();
+            document.getElementById("addButton").disabled = false;
+            document.getElementById("updateButton").disabled = true;
+        };
+
+        // Afficher les services au chargement
+        displayServices();
+    });
+</script>
+</body>
+</html>

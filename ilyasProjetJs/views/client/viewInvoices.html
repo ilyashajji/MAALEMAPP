@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique des Réservations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7fc;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .table-section {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-back {
+            text-decoration: none; /* Remove underline */
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5">Historique des Réservations</h1>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <h4 class="mb-4">Liste des Réservations Passées</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Nom</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Heure</th>
+                            <th scope="col">Nombre de Personnes</th>
+                            <th scope="col">Prix</th>
+                            <th scope="col">Constructeur</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservationTable">
+                        <!-- Les réservations seront affichées ici -->
+                    </tbody>
+                </table>
+                <!-- Bouton de redirection stylisé -->
+                <a href="dashboard.html" class="btn-back">Retour au Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Exemple de données de réservations passées avec le prix et le constructeur
+            let reservations = [
+                { id: 1, name: "Ahmed Ali", date: "2025-01-10", time: "18:00", guests: 3, price: 150, constructor: "Service A" },
+                { id: 2, name: "Sara Karim", date: "2025-01-15", time: "20:30", guests: 2, price: 100, constructor: "Service B" },
+                { id: 3, name: "Samira Lahlou", date: "2025-01-20", time: "19:00", guests: 4, price: 200, constructor: "Service C" }
+            ];
+
+            // Fonction pour afficher les réservations dans le tableau
+            function displayReservations() {
+                const reservationTable = document.getElementById("reservationTable");
+                reservationTable.innerHTML = ""; // Vider le tableau existant
+
+                reservations.forEach((reservation) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${reservation.id}</td>
+                        <td>${reservation.name}</td>
+                        <td>${reservation.date}</td>
+                        <td>${reservation.time}</td>
+                        <td>${reservation.guests}</td>
+                        <td>${reservation.price} MAD</td>
+                        <td>${reservation.constructor}</td>
+                    `;
+                    reservationTable.appendChild(row);
+                });
+            }
+
+            // Affichage des réservations existantes
+            displayReservations();
+        });
+    </script>
+</body>
+</html>

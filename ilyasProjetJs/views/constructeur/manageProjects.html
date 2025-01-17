@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Projets</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7fc;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .form-section, .table-section {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .btn-back {
+            text-decoration: none;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5">Gestion des Projets</h1>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <h4 class="mb-4">Ajouter ou Modifier un Projet</h4>
+            <form id="projectForm">
+                <input type="hidden" id="projectId">
+                <div class="mb-3">
+                    <label for="projectName" class="form-label">Nom du Projet</label>
+                    <input type="text" class="form-control" id="projectName" placeholder="Entrez le nom du projet" required>
+                </div>
+                <div class="mb-3">
+                    <label for="projectDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="projectDescription" rows="3" placeholder="Entrez une description" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="projectDeadline" class="form-label">Date Limite</label>
+                    <input type="date" class="form-control" id="projectDeadline" required>
+                </div>
+                <div class="d-flex gap-3">
+                    <button type="button" id="addProjectBtn" class="btn btn-primary w-100">Ajouter</button>
+                    <button type="button" id="updateProjectBtn" class="btn btn-warning w-100" disabled>Modifier</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-section">
+            <h4 class="mb-4">Liste des Projets</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Nom</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Date Limite</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectTable">
+                        <!-- Les projets seront ajoutés dynamiquement ici -->
+                    </tbody>
+                </table>
+                <a href="dashboard.html" class="btn-back">Retour au Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let projects = JSON.parse(localStorage.getItem("projects")) || [];
+
+            function saveToLocalStorage() {
+                localStorage.setItem("projects", JSON.stringify(projects));
+            }
+
+            function displayProjects() {
+                const projectTable = document.getElementById("projectTable");
+                projectTable.innerHTML = ""; // Clear the table
+
+                projects.forEach((project) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${project.id}</td>
+                        <td>${project.name}</td>
+                        <td>${project.description}</td>
+                        <td>${project.deadline}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editProject(${project.id})">Modifier</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteProject(${project.id})">Supprimer</button>
+                        </td>
+                    `;
+                    projectTable.appendChild(row);
+                });
+            }
+
+            function addProject(projectData) {
+                const newProject = {
+                    id: projects.length > 0 ? projects[projects.length - 1].id + 1 : 1,
+                    name: projectData.name,
+                    description: projectData.description,
+                    deadline: projectData.deadline
+                };
+                projects.push(newProject);
+                saveToLocalStorage();
+                displayProjects();
+            }
+
+            function updateProject(projectData) {
+                const index = projects.findIndex((p) => p.id === projectData.id);
+                if (index !== -1) {
+                    projects[index] = projectData;
+                    saveToLocalStorage();
+                    displayProjects();
+                }
+            }
+
+            window.editProject = (id) => {
+                const project = projects.find((p) => p.id === id);
+                if (project) {
+                    document.getElementById("projectId").value = project.id;
+                    document.getElementById("projectName").value = project.name;
+                    document.getElementById("projectDescription").value = project.description;
+                    document.getElementById("projectDeadline").value = project.deadline;
+
+                    document.getElementById("addProjectBtn").disabled = true;
+                    document.getElementById("updateProjectBtn").disabled = false;
+                }
+            };
+
+            window.deleteProject = (id) => {
+                projects = projects.filter((p) => p.id !== id);
+                saveToLocalStorage();
+                displayProjects();
+            };
+
+            document.getElementById("addProjectBtn").onclick = () => {
+                const projectData = {
+                    name: document.getElementById("projectName").value,
+                    description: document.getElementById("projectDescription").value,
+                    deadline: document.getElementById("projectDeadline").value
+                };
+                addProject(projectData);
+                document.getElementById("projectForm").reset();
+            };
+
+            document.getElementById("updateProjectBtn").onclick = () => {
+                const projectData = {
+                    id: parseInt(document.getElementById("projectId").value),
+                    name: document.getElementById("projectName").value,
+                    description: document.getElementById("projectDescription").value,
+                    deadline: document.getElementById("projectDeadline").value
+                };
+                updateProject(projectData);
+                document.getElementById("projectForm").reset();
+                document.getElementById("addProjectBtn").disabled = false;
+                document.getElementById("updateProjectBtn").disabled = true;
+            };
+
+            displayProjects();
+        });
+    </script>
+</body>
+</html>
